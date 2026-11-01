@@ -148,6 +148,13 @@ class NewtonSolver:
         if hasattr(solver, "prepare_contacts"):
             solver.prepare_contacts(contacts)
 
+    @classmethod
+    def create_contact_observables(
+        cls, cfg: NewtonSolverCfg, solver: SolverBase, contacts: Contacts
+    ) -> SolverBase.Observables | None:
+        """Allocate solver-owned contact forces for sensors, or use the legacy contact buffer."""
+        return None
+
     # ----- Stepping and resets -----
 
     @classmethod
@@ -164,9 +171,14 @@ class NewtonSolver:
         control: Control,
         contacts: Contacts | None,
         dt: float,
+        *,
+        observables: SolverBase.Observables | None = None,
     ) -> None:
         """Advance one substep of ``dt`` [s]."""
-        solver.step(state_in, state_out, control, contacts, dt)
+        if observables is None:
+            solver.step(state_in, state_out, control, contacts, dt)
+        else:
+            solver.step(state_in, state_out, control, contacts, dt, observables=observables)
 
     @classmethod
     def post_step(cls, cfg: NewtonSolverCfg, solver: SolverBase, state: State) -> None:

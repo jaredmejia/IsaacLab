@@ -9,8 +9,10 @@ These tests verify the REPLACE-only preset system without depending on
 external environment configurations.
 """
 
+import ast
 import warnings
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -23,6 +25,34 @@ from isaaclab_tasks.utils.hydra import (
     preset,
     resolve_presets,
 )
+
+
+def test_steel_preset_has_one_owner_per_task_family() -> None:
+    """Keep Steel on shared preset roots and reject the old FeatherPGS selector."""
+    root = Path(__file__).resolve().parents[2] / "isaaclab_tasks"
+    expected = {
+        "contrib/keyboard/so101_env_cfg.py",
+        "core/cabinet/cabinet_env_cfg.py",
+        "core/cartpole/cartpole_common.py",
+        "core/lift/lift_env_cfg.py",
+        "core/locomotion/ant/ant_common.py",
+        "core/locomotion/humanoid/humanoid_common.py",
+        "core/reach/reach_env_cfg.py",
+        "core/reorient/config/allegro_hand/allegro_hand_common.py",
+        "core/velocity/velocity_env_cfg.py",
+    }
+    owners = set()
+    for path in root.rglob("*.py"):
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+                continue
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            names = {target.id for target in targets if isinstance(target, ast.Name)}
+            assert "feather_pgs" not in names, path
+            if "steel" in names:
+                owners.add(path.relative_to(root).as_posix())
+    assert owners == expected
 
 # =============================================================================
 # Leaf config classes (reused across all test sections)
