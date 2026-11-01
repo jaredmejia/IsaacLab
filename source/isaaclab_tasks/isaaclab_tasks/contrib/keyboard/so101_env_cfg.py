@@ -3,7 +3,13 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from isaaclab_newton.physics import MJWarpSolverCfg, NewtonCfg, NewtonCollisionPipelineCfg, NewtonShapeCfg
+from isaaclab_newton.physics import (
+    MJWarpSolverCfg,
+    NewtonCfg,
+    NewtonCollisionPipelineCfg,
+    NewtonShapeCfg,
+    SteelSolverCfg,
+)
 from isaaclab_physx.physics import PhysxCfg
 
 import isaaclab.sim as sim_utils
@@ -67,6 +73,7 @@ class KeyboardAssetCfg(PresetCfg):
         articulation_root_prim_path=None,
         spawn=MultiAssetSpawnerCfg(assets_cfg=list(TYPING_KEYBOARD_POOL.spawners_single), random_choice=False),
     )
+    steel = newton_mjwarp  # Both solvers consume the Newton-compatible keyboard assets.
     isaacsim_physx = default
     physx = default
     default = newton_mjwarp
@@ -306,6 +313,15 @@ class PhysicsCfg(PresetCfg):
         default_shape_cfg=NewtonShapeCfg(),
         num_substeps=2,
         debug_mode=False,
+    )
+    steel = NewtonCfg(
+        solver_cfg=SteelSolverCfg(
+            update_mass_matrix_interval=2, enable_joint_limits=True, joint_limit_activation_gap=0.1,
+            articulation_constraint_max=1024, free_body_constraint_max=64,
+        ),
+        collision_cfg=NewtonCollisionPipelineCfg(),
+        default_shape_cfg=NewtonShapeCfg(),
+        num_substeps=2,
     )
     physx = PhysxAutoCfg(isaacsim_physx=isaacsim_physx)
     default = newton_mjwarp

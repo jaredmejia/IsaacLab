@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import functools
 import logging
+from pathlib import Path
 from types import SimpleNamespace
 
 import isaaclab_newton.physics.mjwarp_solver as mjwarp_solver_module
@@ -42,6 +43,15 @@ from newton.solvers import SolverImplicitMPM, SolverMuJoCo, SolverXPBD
 
 from isaaclab.sim import SimulationContext
 from isaaclab.test.utils import test_devices
+
+
+def test_steel_stays_in_the_solver_layer() -> None:
+    """The Steel integration must use the shared Newton manager and avoid the removed FPGS manager hierarchy."""
+    physics_root = Path(__file__).resolve().parents[2] / "isaaclab_newton" / "physics"
+    assert not (physics_root / "steel_manager.py").exists()
+    assert not (physics_root / "steel_manager_cfg.py").exists()
+    assert not (physics_root / "feather_pgs_manager.py").exists()
+    assert "FeatherPGS" not in (physics_root / "__init__.pyi").read_text()
 
 
 def _model_stub(state_attributes=()) -> SimpleNamespace:

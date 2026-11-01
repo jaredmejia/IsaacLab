@@ -173,6 +173,8 @@ class NewtonBackend:
         """Collision pipeline, or ``None`` when the solver collides internally."""
         self.contacts: Contacts | None = None
         """Contacts produced by the collision pipeline or the solver."""
+        self.contact_observables: SolverBase.Observables | None = None
+        """Solver-owned contact forces when registered sensors require them."""
         self.staged_body_f: wp.array | None = None
         """Body forces [N, N·m] written before the step, re-applied before every substep."""
         self.world_mask = wp.zeros(self.model.world_count + 1, dtype=wp.bool, device=self.device)
@@ -222,7 +224,7 @@ class NewtonBackend:
         self.particle_ranges, self.deformable_ranges, self.geometry_offsets = {}, {}, {}
         self.bvh_refit = TimestampedBuffer()
         if self.cfg is not None:
-            self.solver = self.collision_pipeline = self.contacts = self.actuators = None
+            self.solver = self.collision_pipeline = self.contacts = self.contact_observables = self.actuators = None
             self.staged_body_f = self.capture = self.graph = None
             self.contact_sensors, self.imu_sensors = {}, []
             self.pre_actuator_callbacks, self.post_actuator_callbacks = [], []
@@ -244,8 +246,11 @@ class NewtonBackend:
         if mode != wp.DeterministicMode.NOT_GUARANTEED and not solver_cls.deterministic:
             raise ValueError(
                 f"Newton deterministic mode {mode.name} is not supported by {type(solver_cfg).__name__}."
-                " Use MJWarp on the GPU, XPBD, or Featherstone, or disable deterministic mode."
+                " Use MJWarp on the GPU, XPBD, Steel, or Featherstone, or disable deterministic mode."
             )
+        if self.cfg.collision_cfg is not None and self.cfg.collision_cfg.rigid_contact_max is not None:
+            # Solver scratch and the collision pipeline must agree on the explicit contact capacity.
+            self.model.rigid_contact_max = self.cfg.collision_cfg.rigid_contact_max
         solver = self.solver = solver_cls.build(solver_cfg, self.model, mode, env_template)
         if not solver_cls.single_state:
             solver_cls.init_state(solver_cfg, solver, self.state_1)
@@ -395,8 +400,13 @@ class NewtonBackend:
             )
         self.contact_sensors[key] = sensor
         # Contacts allocated before the sensor requested the force attribute must be reallocated.
-        if self.solver is not None and self.contacts is not None and self.contacts.force is None:
-            self._allocate_contacts()
+        if self.solver is not None and self.contacts is not None:
+            if self.contacts.force is None:
+                self._allocate_contacts()
+            elif self.contact_observables is None:
+                self.contact_observables = solver_cfg.class_type.create_contact_observables(
+                    solver_cfg, self.solver, self.contacts
+                )
         return sensor
 
     def add_imu_sensor(self, sites: list[int]) -> SensorIMU:
@@ -524,6 +534,8 @@ class NewtonBackend:
                     )
         if self.contacts is not None:
             solver_cls.prepare_contacts(solver_cfg, solver, self.contacts, self.collision_pipeline)
+            if self.contact_sensors:
+                self.contact_observables = solver_cls.create_contact_observables(solver_cfg, solver, self.contacts)
 
     def _notify_model_changes(self) -> None:
         """Notify the solver of the queued model-property changes once, combining their categories."""
@@ -598,10 +610,14 @@ class NewtonBackend:
                 wp.copy(state.body_f, self.staged_body_f)
             for callback in self.state_force_callbacks:
                 callback(state)
-            if solver_cls.single_state:
-                solver_cls.step(solver_cfg, solver, state, state, control, contacts, dt)
+            state_out = state if solver_cls.single_state else self.state_1
+            if self.contact_observables is None:
+                solver_cls.step(solver_cfg, solver, state, state_out, control, contacts, dt)
             else:
-                solver_cls.step(solver_cfg, solver, state, self.state_1, control, contacts, dt)
+                solver_cls.step(
+                    solver_cfg, solver, state, state_out, control, contacts, dt, observables=self.contact_observables
+                )
+            if not solver_cls.single_state:
                 if num_substeps % 2 == 1 and i == num_substeps - 1:
                     state.assign(self.state_1)
                 else:
@@ -617,9 +633,10 @@ class NewtonBackend:
             sensor.update(self.state_0)
         if self.contact_sensors:
             eval_contacts = contacts if contacts is not None else self.contacts
-            self.solver.update_contacts(eval_contacts, self.state_0)
+            if self.contact_observables is None:
+                self.solver.update_contacts(eval_contacts, self.state_0)
             for sensor in self.contact_sensors.values():
-                sensor.update(self.state_0, eval_contacts)
+                sensor.update(self.state_0, eval_contacts, observables=self.contact_observables)
 
     def _refit_bvh(self) -> None:
         model, state = self.model, self.state_0

@@ -30,6 +30,7 @@ import pytest
 import torch
 import warp as wp
 from flaky import flaky
+from isaaclab_newton.physics import SteelSolverCfg
 from isaaclab_newton.physics.newton_backend import _compile_label_pattern
 from isaaclab_newton.sensors.contact_sensor import ContactSensorCfg as NewtonContactSensorCfg
 from isaaclab_physx.sim.schemas import PhysxRigidBodyCfg
@@ -353,13 +354,13 @@ def test_horizontal_collision_detects_contact(device: str, use_mujoco_contacts: 
 
 # The pipelines select distinct contact paths; the device selects none, so it rotates across them.
 @pytest.mark.parametrize(
-    "device, use_mujoco_contacts",
+    "device, use_mujoco_contacts, steel",
     [
-        pytest.param(device, pipeline.values[0], id=f"{pipeline.id}-{device}")
+        pytest.param(device, pipeline.values[0], False, id=f"{pipeline.id}-{device}")
         for device, pipeline in zip(test_devices() * len(COLLISION_PIPELINES), COLLISION_PIPELINES)
-    ],
+    ] + [pytest.param(device, False, True, id=f"steel-{device}") for device in test_devices(DeviceScope.CUDA)],
 )
-def test_resting_object_contact_force(device: str, use_mujoco_contacts: bool):
+def test_resting_object_contact_force(device: str, use_mujoco_contacts: bool, steel: bool):
     """Test that resting object contact force equals weight and points upward.
 
     Two objects (light=2kg and heavy=4kg) rest on ground.
@@ -379,6 +380,8 @@ def test_resting_object_contact_force(device: str, use_mujoco_contacts: bool):
     sim_cfg = make_sim_cfg(
         use_mujoco_contacts=use_mujoco_contacts, device=device, gravity=(0.0, 0.0, -gravity_magnitude)
     )
+    if steel:
+        sim_cfg.physics.solver_cfg = SteelSolverCfg()
 
     with build_simulation_context(sim_cfg=sim_cfg, auto_add_lighting=True) as sim:
         sim._app_control_on_stop_handle = None
