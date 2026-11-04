@@ -46,7 +46,9 @@ class CartpolePhysicsCfg(PresetCfg):
         use_cuda_graph=True,
     )
     steel: NewtonCfg = NewtonCfg(
-        solver_cfg=SteelSolverCfg(enable_joint_limits=True, iterations=4, articulation_constraint_max=8, free_body_constraint_max=64),
+        solver_cfg=SteelSolverCfg(
+            enable_joint_limits=True, iterations=4, articulation_constraint_max=8, free_body_constraint_max=64
+        ),
     )
     newton_kamino: NewtonCfg = NewtonCfg(
         solver_cfg=KaminoPADMMSolverCfg(sparse_jacobian=True),

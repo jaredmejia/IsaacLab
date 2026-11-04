@@ -59,8 +59,12 @@ class ReachPhysicsCfg(PresetCfg):
     )
     steel: NewtonCfg = NewtonCfg(
         solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2, enable_joint_limits=True, enable_joint_velocity_limits=True,
-            joint_limit_activation_gap=0.1, articulation_constraint_max=64, free_body_constraint_max=32,
+            update_mass_matrix_interval=2,
+            enable_joint_limits=True,
+            enable_joint_velocity_limits=True,
+            joint_limit_activation_gap=0.1,
+            articulation_constraint_max=64,
+            free_body_constraint_max=32,
         ),
         num_substeps=2,
     )

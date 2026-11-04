@@ -60,7 +60,9 @@ class AntPhysicsCfg(PresetCfg):
         debug_mode=False,
     )
     steel: NewtonCfg = NewtonCfg(
-        solver_cfg=SteelSolverCfg(enable_joint_limits=True, articulation_constraint_max=64, free_body_constraint_max=512),
+        solver_cfg=SteelSolverCfg(
+            enable_joint_limits=True, articulation_constraint_max=64, free_body_constraint_max=512
+        ),
     )
     newton_kamino: NewtonCfg = NewtonCfg(
         solver_cfg=KaminoPADMMSolverCfg(sparse_jacobian=True),

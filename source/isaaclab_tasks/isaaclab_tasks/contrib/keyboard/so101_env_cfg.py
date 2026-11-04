@@ -316,8 +316,11 @@ class PhysicsCfg(PresetCfg):
     )
     steel = NewtonCfg(
         solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2, enable_joint_limits=True, joint_limit_activation_gap=0.1,
-            articulation_constraint_max=1024, free_body_constraint_max=64,
+            update_mass_matrix_interval=2,
+            enable_joint_limits=True,
+            joint_limit_activation_gap=0.1,
+            articulation_constraint_max=1024,
+            free_body_constraint_max=64,
         ),
         collision_cfg=NewtonCollisionPipelineCfg(),
         default_shape_cfg=NewtonShapeCfg(),

@@ -134,7 +134,9 @@ class CabinetSimCfg(PresetCfg):
         newton_mjwarp,
         dt=1 / 60,
         physics=NewtonCfg(
-            solver_cfg=SteelSolverCfg(enable_joint_limits=True, articulation_constraint_max=256, free_body_constraint_max=32),
+            solver_cfg=SteelSolverCfg(
+                enable_joint_limits=True, articulation_constraint_max=256, free_body_constraint_max=32
+            ),
         ),
     )
     default: SimulationCfg = newton_mjwarp

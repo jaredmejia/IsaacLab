@@ -358,7 +358,8 @@ def test_horizontal_collision_detects_contact(device: str, use_mujoco_contacts: 
     [
         pytest.param(device, pipeline.values[0], False, id=f"{pipeline.id}-{device}")
         for device, pipeline in zip(test_devices() * len(COLLISION_PIPELINES), COLLISION_PIPELINES)
-    ] + [pytest.param(device, False, True, id=f"steel-{device}") for device in test_devices(DeviceScope.CUDA)],
+    ]
+    + [pytest.param(device, False, True, id=f"steel-{device}") for device in test_devices(DeviceScope.CUDA)],
 )
 def test_resting_object_contact_force(device: str, use_mujoco_contacts: bool, steel: bool):
     """Test that resting object contact force equals weight and points upward.
