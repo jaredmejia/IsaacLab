@@ -88,8 +88,12 @@ class PhysicsCfg(PresetCfg):
     )
     steel = NewtonCfg(
         solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2, enable_joint_limits=True, enable_joint_velocity_limits=True,
-            iterations=12, articulation_constraint_max=192, free_body_constraint_max=64,
+            update_mass_matrix_interval=2,
+            enable_joint_limits=True,
+            enable_joint_velocity_limits=True,
+            iterations=12,
+            articulation_constraint_max=192,
+            free_body_constraint_max=64,
             contact_torsion_device=True,
         ),
         num_substeps=2,

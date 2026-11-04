@@ -71,8 +71,11 @@ class RoughPhysicsCfg(PresetCfg):
     )
     steel = NewtonCfg(
         solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2, enable_joint_limits=True, contact_friction_gap_max=0.02,
-            articulation_constraint_max=192, free_body_constraint_max=32,
+            update_mass_matrix_interval=2,
+            enable_joint_limits=True,
+            contact_friction_gap_max=0.02,
+            articulation_constraint_max=192,
+            free_body_constraint_max=32,
         ),
         collision_cfg=NewtonCollisionPipelineCfg(max_triangle_pairs=12_000_000),
         num_substeps=2,

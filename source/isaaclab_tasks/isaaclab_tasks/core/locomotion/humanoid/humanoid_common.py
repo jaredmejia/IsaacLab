@@ -75,8 +75,10 @@ class HumanoidPhysicsCfg(PresetCfg):
     )
     steel: NewtonCfg = NewtonCfg(
         solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2, enable_joint_limits=True,
-            articulation_constraint_max=128, free_body_constraint_max=512,
+            update_mass_matrix_interval=2,
+            enable_joint_limits=True,
+            articulation_constraint_max=128,
+            free_body_constraint_max=512,
         ),
         num_substeps=2,
     )

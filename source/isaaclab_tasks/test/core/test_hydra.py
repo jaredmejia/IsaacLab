@@ -54,6 +54,7 @@ def test_steel_preset_has_one_owner_per_task_family() -> None:
                 owners.add(path.relative_to(root).as_posix())
     assert owners == expected
 
+
 # =============================================================================
 # Leaf config classes (reused across all test sections)
 # =============================================================================
