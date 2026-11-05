@@ -242,6 +242,37 @@ def test_steel_contact_torsion_switch_controls_the_authored_radius(monkeypatch, 
     np.testing.assert_allclose(radii_at_construction[0], [0.008 if contact_torsion else 0.0], rtol=1e-6)
 
 
+@pytest.mark.parametrize("filter_fixed_root_contacts", [True, False])
+def test_steel_fixed_root_filter_drops_only_welded_root_static_pairs(monkeypatch, filter_fixed_root_contacts):
+    """The filter removes the welded base's pairs with static shapes and keeps every other pair."""
+    builder = ModelBuilder()
+    register_builder_attributes(builder, SteelSolverCfg())
+    ground = builder.add_ground_plane()
+    table = builder.add_shape_box(-1, hx=0.5, hy=0.5, hz=0.1)
+    base = builder.add_link()
+    base_shape = builder.add_shape_box(base, hx=0.1, hy=0.1, hz=0.1)
+    link = builder.add_link()
+    builder.add_shape_box(link, hx=0.1, hy=0.1, hz=0.1)
+    # USD import keeps a world-welded root's contacts with static shapes, unlike the builder default.
+    root = builder.add_joint_fixed(-1, base, collision_filter_parent=False)
+    builder.add_articulation([root, builder.add_joint_revolute(base, link, axis=(0.0, 0.0, 1.0))])
+    builder.add_shape_box(builder.add_body(), hx=0.1, hy=0.1, hz=0.1)
+    model = builder.finalize(device="cpu")
+    pairs_before = {tuple(sorted(pair)) for pair in model.shape_contact_pairs.numpy().tolist()}
+    monkeypatch.setattr(
+        SteelSolver, "solver_class", type("RecordingSolver", (), {"__init__": lambda self, model: None})
+    )
+
+    cfg = SteelSolverCfg(filter_fixed_root_contacts=filter_fixed_root_contacts)
+    SteelSolver.build(cfg, model, wp.DeterministicMode.NOT_GUARANTEED)
+
+    pairs_after = {tuple(sorted(pair)) for pair in model.shape_contact_pairs.numpy().tolist()}
+    base_static_pairs = {tuple(sorted((static, base_shape))) for static in (ground, table)}
+    assert base_static_pairs <= pairs_before
+    assert pairs_before - pairs_after == (base_static_pairs if filter_fixed_root_contacts else set())
+    assert pairs_after <= pairs_before
+
+
 def test_mujoco_cpu_reports_an_explicit_mode_instead_of_applying_it(caplog):
     """MuJoCo on the CPU is reproducible on its own, so a requested mode is reported and not applied."""
     with caplog.at_level(logging.INFO, logger=mjwarp_solver_module.__name__):

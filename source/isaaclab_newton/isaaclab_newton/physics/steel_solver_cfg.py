@@ -65,6 +65,9 @@ class SteelSolverCfg(NewtonSolverCfg):
     contact_friction_position_iterations: int = -1
     """Position iterations used for contact friction anchoring."""
 
+    filter_fixed_root_contacts: bool = False
+    """Drop contact pairs between static shapes and bodies welded to the world by a zero-DOF root joint."""
+
     contact_torsion: bool = True
     """Whether contacts get torsion rows from ``physxCollision:minTorsionalPatchRadius``; ``False`` zeroes it."""
 
