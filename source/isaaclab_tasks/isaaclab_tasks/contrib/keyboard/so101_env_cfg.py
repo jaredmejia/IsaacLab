@@ -323,7 +323,8 @@ class PhysicsCfg(PresetCfg):
             free_body_constraint_max=64,
             parallel_tree=True,
         ),
-        collision_cfg=NewtonCollisionPipelineCfg(),
+        # Per-world contact headroom bounds Steel's contact scratch allocation.
+        collision_cfg=NewtonCollisionPipelineCfg(rigid_contact_max_per_world=170),
         # A tighter contact gap keeps far fewer speculative key contacts in the solve.
         default_shape_cfg=NewtonShapeCfg(gap=0.002),
         num_substeps=2,
