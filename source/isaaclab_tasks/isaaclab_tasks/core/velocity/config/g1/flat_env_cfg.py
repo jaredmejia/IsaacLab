@@ -117,6 +117,10 @@ class G1FlatEnvCfg(LocomotionVelocityRoughEnvCfg):
         newton_mjwarp.solver_cfg.njmax = 95
         newton_mjwarp.solver_cfg.nconmax = 10
         self.sim.physics.default = newton_mjwarp
+        # Twice the most articulation rows seen in one world.
+        self.sim.physics.steel.solver_cfg.fast.articulation_constraint_max = 112
+        self.sim.physics.steel.solver_cfg.fast.parallel_tree = True
+        self.sim.physics.steel.solver_cfg.fast.use_parallel_streams = True
         # scene
         self.scene.robot = replace(G1_MINIMAL_CFG, prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.terrain.terrain_type = "plane"

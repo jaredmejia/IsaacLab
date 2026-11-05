@@ -504,6 +504,11 @@ class G1RoughTeacherEnvCfg(LocomotionVelocityRoughEnvCfg):
     commands.base_velocity.ranges.lin_vel_y = (-0.0, 0.0)
     commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
 
+    def __post_init__(self):
+        super().__post_init__()
+        self.sim.physics.steel.solver_cfg.fast.parallel_tree = True
+        self.sim.physics.steel.solver_cfg.fast.use_parallel_streams = True
+
 
 @configclass
 class G1RoughDepthStudentEnvCfg(G1RoughTeacherEnvCfg):

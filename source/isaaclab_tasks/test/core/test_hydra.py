@@ -97,6 +97,14 @@ def test_so101_steel_preset_enables_parallel_streams() -> None:
         ("IsaacContrib-Velocity-Flat-AnymalC", 8, 16, {}),
         ("Isaac-Velocity-Rough-UnitreeGo2", 8, 8, {"joint_limit_activation_gap": 0.4}),
         ("Isaac-Velocity-Flat-UnitreeGo2", 8, 8, {}),
+        (
+            "Isaac-Velocity-Flat-G1",
+            8,
+            8,
+            {"articulation_constraint_max": 112, "parallel_tree": True, "use_parallel_streams": True},
+        ),
+        ("Isaac-Velocity-Rough-G1", 8, 8, {"parallel_tree": True, "use_parallel_streams": True}),
+        ("Isaac-Velocity-Rough-G1-Depth-Student", 8, 8, {"parallel_tree": True, "use_parallel_streams": True}),
     ],
 )
 def test_steel_fast_tuning_is_opt_in_and_preserves_substeps(task, default_iterations, fast_iterations, fast_changes):
