@@ -7,6 +7,7 @@
 
 from isaaclab.utils import configclass
 
+from ...velocity_env_cfg import RoughPhysicsCfg
 from .rough_env_cfg import UnitreeGo2RoughEnvCfg
 
 
@@ -22,6 +23,8 @@ class UnitreeGo2FlatEnvCfg(UnitreeGo2RoughEnvCfg):
         newton_mjwarp.solver_cfg.njmax = 65
         newton_mjwarp.solver_cfg.nconmax = 35
         self.sim.physics.default = newton_mjwarp
+        # Flat terrain keeps the family Steel preset.
+        self.sim.physics.steel = RoughPhysicsCfg().steel
         # scene
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
