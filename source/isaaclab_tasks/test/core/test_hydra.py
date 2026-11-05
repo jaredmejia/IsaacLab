@@ -62,7 +62,62 @@ def test_so101_steel_preset_enables_parallel_streams() -> None:
     cfg, _ = hydra_mod.resolve_task_config("IsaacContrib-Keyboard-SO101", None, overrides=["presets=steel"])
     assert cfg.scene.num_envs == 4096
     assert isinstance(cfg.sim.physics.solver_cfg, SteelSolverCfg)
+    assert cfg.sim.physics.num_substeps == 2
     assert cfg.sim.physics.solver_cfg.use_parallel_streams is True
+    assert cfg.sim.physics.solver_cfg.parallel_tree is False
+    assert cfg.sim.physics.collision_cfg.rigid_contact_max_per_world is None
+    assert cfg.sim.physics.default_shape_cfg.gap == 0.01
+
+    fast, _ = hydra_mod.resolve_task_config("IsaacContrib-Keyboard-SO101", None, overrides=["presets=steel,fast"])
+    assert fast.sim.physics.num_substeps == 2
+    assert fast.sim.physics.solver_cfg.parallel_tree is True
+    assert fast.sim.physics.collision_cfg.rigid_contact_max_per_world == 170
+    assert fast.sim.physics.default_shape_cfg.gap == 0.002
+
+
+@pytest.mark.parametrize(
+    ("task", "default_iterations", "fast_iterations", "fast_changes"),
+    [
+        (
+            "Isaac-Reach-Franka",
+            8,
+            4,
+            {
+                "update_mass_matrix_interval": 4,
+                "articulation_constraint_max": 16,
+                "enable_joint_velocity_limits": False,
+            },
+        ),
+        ("Isaac-Reach-Franka-OSC", 8, 8, {}),
+        ("Isaac-Reach-UR10", 8, 4, {"filter_fixed_root_contacts": True}),
+        ("Isaac-Reorient-Cube-Allegro", 12, 8, {"contact_friction_gap_max": 0.001, "contact_torsion": False}),
+        ("Isaac-Reorient-Cube-Allegro-Direct", 12, 8, {"contact_friction_gap_max": 0.001, "contact_torsion": False}),
+        ("Isaac-Velocity-Rough-AnymalD", 8, 16, {}),
+        ("Isaac-Velocity-Flat-AnymalD", 8, 8, {}),
+        ("IsaacContrib-Velocity-Flat-AnymalC", 8, 16, {}),
+        ("Isaac-Velocity-Rough-UnitreeGo2", 8, 8, {"joint_limit_activation_gap": 0.4}),
+        ("Isaac-Velocity-Flat-UnitreeGo2", 8, 8, {}),
+    ],
+)
+def test_steel_fast_tuning_is_opt_in_and_preserves_substeps(task, default_iterations, fast_iterations, fast_changes):
+    default, _ = hydra_mod.resolve_task_config(task, None, overrides=["presets=steel"])
+    fast, _ = hydra_mod.resolve_task_config(task, None, overrides=["presets=steel,fast"])
+    assert default.sim.physics.num_substeps == fast.sim.physics.num_substeps == 2
+    assert default.sim.physics.solver_cfg.iterations == default_iterations
+    assert fast.sim.physics.solver_cfg.iterations == fast_iterations
+    for field, expected in fast_changes.items():
+        assert getattr(fast.sim.physics.solver_cfg, field) == expected
+        assert getattr(default.sim.physics.solver_cfg, field) != expected
+
+
+@pytest.mark.parametrize(
+    "task",
+    ["Isaac-Reach-Franka", "Isaac-Open-Drawer-Franka", "Isaac-Open-Drawer-Franka-Direct"],
+)
+def test_franka_steel_tasks_select_driven_usd_variant(task: str) -> None:
+    """The Steel builder reads the Franka's drives from its PhysX USD variant."""
+    cfg, _ = hydra_mod.resolve_task_config(task, None, overrides=["presets=steel"])
+    assert cfg.scene.robot.spawn.variants["Physics"] == "physx"
 
 
 # =============================================================================

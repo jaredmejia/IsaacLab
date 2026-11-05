@@ -13,7 +13,7 @@ from isaaclab_physx.sim.schemas import PhysxRigidBodyCfg
 from isaaclab.actuators import IdealPDActuatorCfg
 from isaaclab.controllers.operational_space_cfg import OperationalSpaceControllerCfg
 from isaaclab.envs.mdp.actions.actions_cfg import OperationalSpaceControllerActionCfg
-from isaaclab.utils import configclass
+from isaaclab.utils import configclass, replace
 
 from isaaclab_tasks.utils import preset
 
@@ -60,6 +60,9 @@ class FrankaReachEnvCfg(franka_reach_env_cfg.FrankaReachEnvCfg):
                 rigid_props.disable_gravity = True
             elif isinstance(rigid_props, MujocoRigidBodyCfg):
                 rigid_props.gravcomp = 1.0
+        # The fast joint-position solver profile does not apply to OSC.
+        solver_choices = self.sim.physics.steel.solver_cfg
+        solver_choices.fast = replace(solver_choices.default)
 
         # The OSC action term replaces the parent's arm-controller presets, so the parent's controller-keyed
         # variants would only zero the action-magnitude reward weight or attach 6D teleop devices here. Resolve

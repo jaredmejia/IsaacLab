@@ -39,7 +39,7 @@ class SteelSolverCfg(NewtonSolverCfg):
     """Simulation steps between mass-matrix factorizations."""
 
     use_parallel_streams: bool = False
-    """Overlap independent articulation-size groups on CUDA when supported by Steel."""
+    """Run each articulation-size group on its own CUDA stream; also enables the fused mass paths."""
 
     enable_joint_limits: bool = False
     """Whether to enforce joint position limits."""
@@ -68,5 +68,14 @@ class SteelSolverCfg(NewtonSolverCfg):
     contact_friction_position_iterations: int = -1
     """Position iterations used for contact friction anchoring."""
 
+    filter_fixed_root_contacts: bool = False
+    """Drop contact pairs between static shapes and bodies welded to the world by a zero-DOF root joint."""
+
+    contact_torsion: bool = True
+    """Whether to construct contact torsion rows from the authored torsion radius."""
+
     contact_torsion_device: bool = False
     """Build contact torsion rows on CUDA instead of the capacity-limited host path."""
+
+    parallel_tree: bool = False
+    """Traverse independent branches of each articulation tree in parallel; measure before enabling."""

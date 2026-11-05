@@ -314,17 +314,21 @@ class PhysicsCfg(PresetCfg):
         num_substeps=2,
         debug_mode=False,
     )
+    _steel_solver = SteelSolverCfg(
+        update_mass_matrix_interval=2,
+        use_parallel_streams=True,
+        enable_joint_limits=True,
+        joint_limit_activation_gap=0.1,
+        articulation_constraint_max=1024,
+        free_body_constraint_max=64,
+    )
     steel = NewtonCfg(
-        solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2,
-            use_parallel_streams=True,
-            enable_joint_limits=True,
-            joint_limit_activation_gap=0.1,
-            articulation_constraint_max=1024,
-            free_body_constraint_max=64,
+        solver_cfg=preset(default=_steel_solver, fast=replace(_steel_solver, parallel_tree=True)),
+        collision_cfg=preset(
+            default=NewtonCollisionPipelineCfg(),
+            fast=NewtonCollisionPipelineCfg(rigid_contact_max_per_world=170),
         ),
-        collision_cfg=NewtonCollisionPipelineCfg(),
-        default_shape_cfg=NewtonShapeCfg(),
+        default_shape_cfg=preset(default=NewtonShapeCfg(), fast=NewtonShapeCfg(gap=0.002)),
         num_substeps=2,
     )
     physx = PhysxAutoCfg(isaacsim_physx=isaacsim_physx)

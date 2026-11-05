@@ -160,8 +160,14 @@ class FrankaReachEnvCfg(ReachEnvCfg):
             "panda_joint7": 12.0,
         }
         self.scene.robot.spawn.variants["Physics"] = preset(
-            default="mujoco", isaacsim_physx="physx", physx="physx", ovphysx="physx"
+            default="mujoco", isaacsim_physx="physx", physx="physx", ovphysx="physx", steel="physx"
         )
+        # The faster joint-position profile is selected with presets=steel,fast.
+        fast_solver = self.sim.physics.steel.solver_cfg.fast
+        fast_solver.iterations = 4
+        fast_solver.update_mass_matrix_interval = 4
+        fast_solver.articulation_constraint_max = 16
+        fast_solver.enable_joint_velocity_limits = False
         self.scene.robot.spawn.variants["Colliders"] = preset(
             default=FRANKA_PANDA_CFG.spawn.variants["Colliders"],
             minimal=FRANKA_MINIMAL_CFG.spawn.variants["Colliders"],

@@ -127,6 +127,12 @@ class NewtonCollisionPipelineCfg:
     Defaults to ``None`` (auto-estimate, same as Newton's default).
     """
 
+    rigid_contact_max_per_world: int | None = None
+    """Rigid contact capacity per world; the total is this times the world count.
+
+    Sizes the buffer for any number of environments. Exclusive with :attr:`rigid_contact_max`.
+    """
+
     max_triangle_pairs: int | None = None
     """Maximum number of triangle pairs allocated by narrow phase for mesh and heightfield collisions.
 
@@ -192,7 +198,17 @@ class NewtonCollisionPipelineCfg:
         from newton.geometry import HydroelasticSDF
 
         cfg_dict = to_dict(self)
+        # The per-world capacity reaches the pipeline through model.rigid_contact_max.
+        cfg_dict.pop("rigid_contact_max_per_world")
         hydro_cfg = cfg_dict.pop("sdf_hydroelastic_config", None)
         if hydro_cfg is not None:
             cfg_dict["sdf_hydroelastic_config"] = HydroelasticSDF.Config(**hydro_cfg)
         return cfg_dict
+
+    def resolve_rigid_contact_max(self, world_count: int) -> int | None:
+        """Return the total contact capacity this configuration sets, or ``None`` to let Newton choose."""
+        if self.rigid_contact_max_per_world is None:
+            return self.rigid_contact_max
+        if self.rigid_contact_max is not None:
+            raise ValueError("Set rigid_contact_max or rigid_contact_max_per_world, not both.")
+        return self.rigid_contact_max_per_world * world_count

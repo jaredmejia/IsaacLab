@@ -5,7 +5,7 @@
 
 """Configuration for the ANYmal-D velocity-tracking environment on flat terrain."""
 
-from isaaclab.utils import configclass
+from isaaclab.utils import configclass, replace
 
 from .rough_env_cfg import AnymalDRoughEnvCfg
 
@@ -24,6 +24,8 @@ class AnymalDFlatEnvCfg(AnymalDRoughEnvCfg):
         newton_mjwarp.solver_cfg.cone = "elliptic"
         newton_mjwarp.solver_cfg.impratio = 100.0
         self.sim.physics.default = newton_mjwarp
+        solver_choices = self.sim.physics.steel.solver_cfg
+        solver_choices.fast = replace(solver_choices.default)
         # scene
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None

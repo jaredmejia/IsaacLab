@@ -21,7 +21,7 @@ from isaaclab.physics import PhysxAutoCfg
 from isaaclab.utils import configclass, replace
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
-from isaaclab_tasks.utils import PresetCfg
+from isaaclab_tasks.utils import PresetCfg, preset
 
 from isaaclab_assets.robots.allegro import ALLEGRO_HAND_CFG, ALLEGRO_HAND_FRICTION_REPLACEMENTS
 
@@ -86,15 +86,25 @@ class PhysicsCfg(PresetCfg):
         ),
         num_substeps=2,
     )
+    _steel_solver = SteelSolverCfg(
+        update_mass_matrix_interval=2,
+        enable_joint_limits=True,
+        enable_joint_velocity_limits=True,
+        iterations=12,
+        articulation_constraint_max=192,
+        free_body_constraint_max=64,
+        contact_torsion_device=True,
+    )
     steel = NewtonCfg(
-        solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2,
-            enable_joint_limits=True,
-            enable_joint_velocity_limits=True,
-            iterations=12,
-            articulation_constraint_max=192,
-            free_body_constraint_max=64,
-            contact_torsion_device=True,
+        solver_cfg=preset(
+            default=_steel_solver,
+            fast=replace(
+                _steel_solver,
+                iterations=8,
+                contact_friction_gap_max=0.001,
+                contact_torsion=False,
+                contact_torsion_device=False,
+            ),
         ),
         num_substeps=2,
     )

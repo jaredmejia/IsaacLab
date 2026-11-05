@@ -35,11 +35,11 @@ from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
 from isaaclab.sim import SimulationCfg
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG
-from isaaclab.utils import configclass
+from isaaclab.utils import configclass, replace
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
 
-from isaaclab_tasks.utils import PresetCfg
+from isaaclab_tasks.utils import PresetCfg, preset
 
 from . import mdp
 
@@ -69,14 +69,15 @@ class RoughPhysicsCfg(PresetCfg):
         debug_mode=False,
         default_shape_cfg=NewtonShapeCfg(margin=0.0, ke=160000.0, kd=1100.0),
     )
+    _steel_solver = SteelSolverCfg(
+        update_mass_matrix_interval=2,
+        enable_joint_limits=True,
+        contact_friction_gap_max=0.02,
+        articulation_constraint_max=192,
+        free_body_constraint_max=32,
+    )
     steel = NewtonCfg(
-        solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2,
-            enable_joint_limits=True,
-            contact_friction_gap_max=0.02,
-            articulation_constraint_max=192,
-            free_body_constraint_max=32,
-        ),
+        solver_cfg=preset(default=_steel_solver, fast=replace(_steel_solver)),
         collision_cfg=NewtonCollisionPipelineCfg(max_triangle_pairs=12_000_000),
         num_substeps=2,
         default_shape_cfg=NewtonShapeCfg(margin=0.01, ke=160000.0, kd=1100.0),

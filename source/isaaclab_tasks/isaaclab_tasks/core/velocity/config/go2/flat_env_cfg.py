@@ -5,7 +5,7 @@
 
 """Configuration for the Unitree Go2 velocity-tracking environment on flat terrain."""
 
-from isaaclab.utils import configclass
+from isaaclab.utils import configclass, replace
 
 from .rough_env_cfg import UnitreeGo2RoughEnvCfg
 
@@ -22,6 +22,8 @@ class UnitreeGo2FlatEnvCfg(UnitreeGo2RoughEnvCfg):
         newton_mjwarp.solver_cfg.njmax = 65
         newton_mjwarp.solver_cfg.nconmax = 35
         self.sim.physics.default = newton_mjwarp
+        solver_choices = self.sim.physics.steel.solver_cfg
+        solver_choices.fast = replace(solver_choices.default)
         # scene
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None

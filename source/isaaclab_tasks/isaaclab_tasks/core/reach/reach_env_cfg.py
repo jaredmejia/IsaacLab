@@ -25,11 +25,11 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.physics import PhysxAutoCfg
 from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.utils import configclass
+from isaaclab.utils import configclass, replace
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
 from isaaclab.visualizers import VisualizerCfg
 
-from isaaclab_tasks.utils import PresetCfg
+from isaaclab_tasks.utils import PresetCfg, preset
 
 ##
 # Physics backend presets
@@ -57,15 +57,16 @@ class ReachPhysicsCfg(PresetCfg):
         debug_mode=False,
         use_cuda_graph=True,
     )
+    _steel_solver = SteelSolverCfg(
+        update_mass_matrix_interval=2,
+        enable_joint_limits=True,
+        enable_joint_velocity_limits=True,
+        joint_limit_activation_gap=0.1,
+        articulation_constraint_max=64,
+        free_body_constraint_max=32,
+    )
     steel: NewtonCfg = NewtonCfg(
-        solver_cfg=SteelSolverCfg(
-            update_mass_matrix_interval=2,
-            enable_joint_limits=True,
-            enable_joint_velocity_limits=True,
-            joint_limit_activation_gap=0.1,
-            articulation_constraint_max=64,
-            free_body_constraint_max=32,
-        ),
+        solver_cfg=preset(default=_steel_solver, fast=replace(_steel_solver)),
         num_substeps=2,
     )
     default: NewtonCfg = newton_mjwarp
