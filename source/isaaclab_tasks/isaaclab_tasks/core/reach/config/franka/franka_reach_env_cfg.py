@@ -162,6 +162,13 @@ class FrankaReachEnvCfg(ReachEnvCfg):
         self.scene.robot.spawn.variants["Physics"] = preset(
             default="mujoco", isaacsim_physx="physx", physx="physx", ovphysx="physx", steel="physx"
         )
+        # Velocity limits are off, as in MJWarp, which enforces none of the asset's 20 and 25 rad/s limits.
+        steel_physics = self.sim.physics.steel
+        steel_physics.num_substeps = 1
+        steel_physics.solver_cfg.iterations = 4
+        steel_physics.solver_cfg.update_mass_matrix_interval = 4
+        steel_physics.solver_cfg.articulation_constraint_max = 16
+        steel_physics.solver_cfg.enable_joint_velocity_limits = False
         self.scene.robot.spawn.variants["Colliders"] = preset(
             default=FRANKA_PANDA_CFG.spawn.variants["Colliders"],
             minimal=FRANKA_MINIMAL_CFG.spawn.variants["Colliders"],
