@@ -91,12 +91,12 @@ class PhysicsCfg(PresetCfg):
             update_mass_matrix_interval=2,
             enable_joint_limits=True,
             enable_joint_velocity_limits=True,
-            iterations=12,
             articulation_constraint_max=192,
             free_body_constraint_max=64,
-            contact_torsion_device=True,
+            contact_friction_gap_max=0.001,
+            contact_torsion=False,
         ),
-        num_substeps=2,
+        num_substeps=1,
     )
     ovphysx = OvPhysxCfg(
         # Match the measured 0.6 runtime actuator efforts, not the USD coefficient (0.035).
