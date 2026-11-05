@@ -79,6 +79,19 @@ def test_collision_cfg_leaves_max_triangle_pairs_to_newton():
     assert NewtonCollisionPipelineCfg().to_pipeline_args()["max_triangle_pairs"] is None
 
 
+def test_collision_cfg_scales_per_world_contact_capacity_with_the_world_count():
+    """A per-world capacity resolves to a total for any world count and never reaches the pipeline arguments."""
+    per_world = NewtonCollisionPipelineCfg(rigid_contact_max_per_world=17)
+
+    assert per_world.resolve_rigid_contact_max(2048) == 17 * 2048
+    assert per_world.resolve_rigid_contact_max(4096) == 17 * 4096
+    assert "rigid_contact_max_per_world" not in per_world.to_pipeline_args()
+    assert NewtonCollisionPipelineCfg(rigid_contact_max=100).resolve_rigid_contact_max(4096) == 100
+    assert NewtonCollisionPipelineCfg().resolve_rigid_contact_max(4096) is None
+    with pytest.raises(ValueError, match="not both"):
+        NewtonCollisionPipelineCfg(rigid_contact_max=100, rigid_contact_max_per_world=17).resolve_rigid_contact_max(1)
+
+
 def test_reset_lets_consumers_bind_each_new_backend_before_the_solver_exists(monkeypatch):
     """Each hard reset finalizes a new backend, dispatches ``PHYSICS_READY``, then builds the solver.
 
