@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import warp as wp
 from newton import Contacts, Model
-from newton.solvers import SolverBase, SolverSteel
+from newton.solvers import SolverBase, SolverMuJoCo, SolverSteel
 
 from .newton_solver import NewtonSolver
 
@@ -36,6 +36,11 @@ class SteelSolver(NewtonSolver):
         if cfg.filter_fixed_root_contacts:
             _drop_fixed_root_static_pairs(model)
         return super().build(cfg, model, mode, env_template)
+
+    @classmethod
+    def solver_classes(cls, cfg) -> tuple[type[SolverBase], ...]:
+        """Steel plus MuJoCo, whose USD actuator attributes carry the drive gains of ``mujoco`` asset variants."""
+        return (SolverSteel, SolverMuJoCo)
 
     @classmethod
     def create_contact_observables(cls, cfg, solver: SolverSteel, contacts: Contacts) -> SolverBase.Observables:
