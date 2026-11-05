@@ -235,7 +235,7 @@ torchvision = "0.26.0"
 ovphysx = "0.7.0.74035321"
 ovrtx = "0.6.0.1791947691"
 ovstage = "0.3.0.1791986420"
-newton = "1.8.0.dev0"
+newton = "1.9.0.dev0"
 warp = "1.17.0"
 
 [tool.ruff]
