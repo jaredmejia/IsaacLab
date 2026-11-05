@@ -69,6 +69,11 @@ def test_solver_kwargs_include_configured_options_and_newton_deterministic_mode(
     assert kwargs["deterministic"] == wp.DeterministicMode.GPU_TO_GPU
     steel_kwargs = solver_kwargs(newton.solvers.SolverSteel, SteelSolverCfg(), wp.DeterministicMode.GPU_TO_GPU)
     assert steel_kwargs["friction_anchor_beta"] == 0.0
+    assert steel_kwargs["use_parallel_streams"] is False
+    parallel_kwargs = solver_kwargs(
+        newton.solvers.SolverSteel, SteelSolverCfg(use_parallel_streams=True), wp.DeterministicMode.GPU_TO_GPU
+    )
+    assert parallel_kwargs["use_parallel_streams"] is True
 
 
 @pytest.mark.parametrize(

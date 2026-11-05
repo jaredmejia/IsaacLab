@@ -317,6 +317,7 @@ class PhysicsCfg(PresetCfg):
     steel = NewtonCfg(
         solver_cfg=SteelSolverCfg(
             update_mass_matrix_interval=2,
+            use_parallel_streams=True,
             enable_joint_limits=True,
             joint_limit_activation_gap=0.1,
             articulation_constraint_max=1024,

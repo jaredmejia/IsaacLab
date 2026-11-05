@@ -55,6 +55,16 @@ def test_steel_preset_has_one_owner_per_task_family() -> None:
     assert owners == expected
 
 
+def test_so101_steel_preset_enables_parallel_streams() -> None:
+    """Keep the keyboard's default batch on Steel's specialized diagonal-contact path."""
+    from isaaclab_newton.physics import SteelSolverCfg
+
+    cfg, _ = hydra_mod.resolve_task_config("IsaacContrib-Keyboard-SO101", None, overrides=["presets=steel"])
+    assert cfg.scene.num_envs == 4096
+    assert isinstance(cfg.sim.physics.solver_cfg, SteelSolverCfg)
+    assert cfg.sim.physics.solver_cfg.use_parallel_streams is True
+
+
 # =============================================================================
 # Leaf config classes (reused across all test sections)
 # =============================================================================

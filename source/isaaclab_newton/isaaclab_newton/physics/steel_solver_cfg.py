@@ -38,6 +38,9 @@ class SteelSolverCfg(NewtonSolverCfg):
     update_mass_matrix_interval: int = 1
     """Simulation steps between mass-matrix factorizations."""
 
+    use_parallel_streams: bool = False
+    """Overlap independent articulation-size groups on CUDA when supported by Steel."""
+
     enable_joint_limits: bool = False
     """Whether to enforce joint position limits."""
 
