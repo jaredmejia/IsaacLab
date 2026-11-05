@@ -31,6 +31,7 @@ from isaaclab_newton.physics import (
     MPMSolverCfg,
     NewtonCfg,
     NewtonManager,
+    SteelSolver,
     SteelSolverCfg,
     VBDSolver,
     VBDSolverCfg,
@@ -40,7 +41,7 @@ from isaaclab_newton.physics.mpm_solver import _make_solver_config, implicit_mpm
 from isaaclab_newton.physics.newton_builder import register_builder_attributes
 from isaaclab_newton.physics.newton_solver import solver_kwargs
 from newton import ModelBuilder
-from newton.solvers import SolverImplicitMPM, SolverMuJoCo, SolverXPBD
+from newton.solvers import SolverImplicitMPM, SolverMuJoCo, SolverSteel, SolverXPBD
 
 from isaaclab.sim import SimulationContext
 from isaaclab.test.utils import test_devices
@@ -219,6 +220,26 @@ def test_mjwarp_determinism_disables_sensors_unless_a_sensor_needs_them(recorded
 
     assert [kwargs["disable_sensors"] for kwargs in recorded_mujoco_kwargs] == [False, True, False]
     assert solver_cfg.disable_sensors is False
+
+
+@pytest.mark.parametrize("contact_torsion", [True, False])
+def test_steel_contact_torsion_switch_controls_the_authored_radius(monkeypatch, contact_torsion):
+    """Disabling contact torsion zeroes every shape's torsion radius before Steel is constructed."""
+    builder = ModelBuilder()
+    register_builder_attributes(builder, SteelSolverCfg())
+    body = builder.add_body()
+    builder.add_shape_box(body, hx=0.1, hy=0.1, hz=0.1)
+    model = builder.finalize(device="cpu")
+    model.steel.min_torsional_patch_radius.fill_(0.008)
+    radii_at_construction = []
+    record = functools.wraps(SolverSteel.__init__)(
+        lambda self, model, **kwargs: radii_at_construction.append(model.steel.min_torsional_patch_radius.numpy())
+    )
+    monkeypatch.setattr(SteelSolver, "solver_class", type("RecordingSolver", (), {"__init__": record}))
+
+    SteelSolver.build(SteelSolverCfg(contact_torsion=contact_torsion), model, wp.DeterministicMode.NOT_GUARANTEED)
+
+    np.testing.assert_allclose(radii_at_construction[0], [0.008 if contact_torsion else 0.0], rtol=1e-6)
 
 
 def test_mujoco_cpu_reports_an_explicit_mode_instead_of_applying_it(caplog):

@@ -65,6 +65,9 @@ class SteelSolverCfg(NewtonSolverCfg):
     contact_friction_position_iterations: int = -1
     """Position iterations used for contact friction anchoring."""
 
+    contact_torsion: bool = True
+    """Whether contacts get torsion rows from ``physxCollision:minTorsionalPatchRadius``; ``False`` zeroes it."""
+
     contact_torsion_device: bool = False
     """Build contact torsion rows on CUDA instead of the capacity-limited host path."""
 
