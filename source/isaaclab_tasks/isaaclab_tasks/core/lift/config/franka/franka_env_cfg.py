@@ -328,6 +328,8 @@ class FrankaLiftEnvCfg(FrankaMixinCfg, lift.LiftEnvCfg):
         # Farthest-point thinning discards valid near-grasp starts.
         reset["diversity_feature"] = None
 
+        self.sim.physics.steel.num_substeps = 1
+
     def play_mode(self):
         super().play_mode()
         # evaluate at the datasheet gripper speed: without the closing-speed randomization the hand
