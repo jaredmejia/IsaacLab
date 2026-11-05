@@ -56,6 +56,9 @@ class SteelSolverCfg(NewtonSolverCfg):
     free_body_constraint_max: int = 512
     """Maximum free-body constraint rows per world."""
 
+    friction_anchor_beta: float = 0.0
+    """Zero selects point friction instead of persistent friction patches."""
+
     contact_friction_gap_max: float | None = None
     """Largest contact gap for friction rows [m]; ``None`` uses Newton's default."""
 

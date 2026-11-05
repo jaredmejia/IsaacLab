@@ -31,6 +31,7 @@ from isaaclab_newton.physics import (
     MPMSolverCfg,
     NewtonCfg,
     NewtonManager,
+    SteelSolverCfg,
     VBDSolver,
     VBDSolverCfg,
     XPBDSolverCfg,
@@ -61,11 +62,13 @@ def _model_stub(state_attributes=()) -> SimpleNamespace:
     )
 
 
-def test_solver_kwargs_include_newton_deterministic_mode():
-    """Solver construction receives the mode configured on the outer Newton config."""
+def test_solver_kwargs_include_configured_options_and_newton_deterministic_mode():
+    """Solver construction receives the selected options and outer Newton determinism mode."""
     kwargs = solver_kwargs(SolverXPBD, XPBDSolverCfg(), wp.DeterministicMode.GPU_TO_GPU)
 
     assert kwargs["deterministic"] == wp.DeterministicMode.GPU_TO_GPU
+    steel_kwargs = solver_kwargs(newton.solvers.SolverSteel, SteelSolverCfg(), wp.DeterministicMode.GPU_TO_GPU)
+    assert steel_kwargs["friction_anchor_beta"] == 0.0
 
 
 @pytest.mark.parametrize(
