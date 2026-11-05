@@ -321,9 +321,11 @@ class PhysicsCfg(PresetCfg):
             joint_limit_activation_gap=0.1,
             articulation_constraint_max=1024,
             free_body_constraint_max=64,
+            parallel_tree=True,
         ),
         collision_cfg=NewtonCollisionPipelineCfg(),
-        default_shape_cfg=NewtonShapeCfg(),
+        # A tighter contact gap keeps far fewer speculative key contacts in the solve.
+        default_shape_cfg=NewtonShapeCfg(gap=0.002),
         num_substeps=2,
     )
     physx = PhysxAutoCfg(isaacsim_physx=isaacsim_physx)
