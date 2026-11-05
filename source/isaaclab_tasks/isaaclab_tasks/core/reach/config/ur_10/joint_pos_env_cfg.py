@@ -28,6 +28,14 @@ class UR10ReachEnvCfg(ReachEnvCfg):
 
         # switch robot to ur10
         self.scene.robot = replace(UR10_CFG, prim_path="{ENV_REGEX_NS}/Robot")
+        # The base sits on the table; the filter drops its pairs with static shapes, as MJWarp does for
+        # zero-DOF bodies.
+        steel_physics = self.sim.physics.steel
+        steel_physics.num_substeps = 1
+        steel_physics.solver_cfg.iterations = 4
+        steel_physics.solver_cfg.update_mass_matrix_interval = 4
+        steel_physics.solver_cfg.articulation_constraint_max = 16
+        steel_physics.solver_cfg.filter_fixed_root_contacts = True
         # override events
         self.events.reset_robot_joints.params["position_range"] = (0.75, 1.25)
         # override rewards
