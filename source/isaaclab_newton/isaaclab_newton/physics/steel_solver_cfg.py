@@ -67,3 +67,9 @@ class SteelSolverCfg(NewtonSolverCfg):
 
     contact_torsion_device: bool = False
     """Build contact torsion rows on CUDA instead of the capacity-limited host path."""
+
+    use_parallel_streams: bool = True
+    """Run each articulation-size group on its own CUDA stream; also enables the fused mass paths."""
+
+    parallel_tree: bool = False
+    """Traverse independent branches of each articulation tree in parallel; measure before enabling."""
